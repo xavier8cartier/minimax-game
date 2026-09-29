@@ -1,0 +1,31 @@
+Seisuhinnangu Tekkimine
+Mängu lõppseisu hindamiseks (funktsioonis `evaluate_board` ja `minimax`) kasutatakse sügavusest sõltuvat väärtust:
+
+1. Võit (O / AI): Kui `O` võidab, on baasskoor `+1`. Lõplik hinnang arvutatakse kui `10 - depth`. See premeerib kiiremaid võite (väiksem `depth`), andes neile kõrgema skoori.
+2. Kaotus (X / Inimene): Kui `X` võidab, on baasskoor `-1`. Lõplik hinnang arvutatakse kui `-10 + depth`. See karistab kiiremaid kaotusi, eelistades mängu maksimaalset pikendamist (suurem `depth` toob skoori lähemale nullile).
+3. Viik: Skoor `0`.
+
+Koodirea Vajalikkus (ai.py: minimax)
+- `if game.winner or game.is_draw:` Lõpetab rekursiooni terminalseisus (võit/viik).
+- `score = game.evaluate_board()` Hangib baashinnangu (+1, -1, 0).
+- `return 10 - depth / -10 + depth` Optimeerib lahendusteed.
+- `if is_maximizing:` Harrastab max-mängija ('O') loogikat (otsib suurimat skoori).
+- `sim_game = game.clone()` Loob mänguseisust koopia, et vältida globaalse laua rikkumist simuleerimisel.
+- `sim_game.make_move(r, c)` Teeb potentsiaalse käigu koopias.
+- `score = minimax(...)` Kutsutakse rekursiivselt välja vastase käigu simuleerimiseks (is_maximizing on vastupidine).
+- `best_score = max(score, best_score)` Uuendab seni leitud parimat valikut.
+- `alpha = max(alpha, score)` ja `beta = min(beta, score)` Uuendavad Alpha-Beta kärpimise piire.
+- `if beta <= alpha: break` (Kärpimine) Lõpetab haru läbimise, sest see on tõestatult halvem kui juba leitud alternatiivid teistes harudes, säästes ressurssi.
+
+Muutujate Väärtused (Trace näide)
+Olgu algandmeteks seis, kus X on teinud 1 käigu ja O hindab esimest vastust:
+1. Käivitatakse `get_best_move()`, `depth = 0`, `is_maximizing = False` (sest simuleeriti 'O' käik ja nüüd on 'X' kord), `alpha = -inf`, `beta = +inf`.
+2. O valib käigu (nt nurk). Luuakse `sim_game` ja tehakse käik. Rekursioon käivitab `minimax` `depth=1` pealt (X kord).
+3. Kui X valib käigu, mis viib kohese võiduni, tagastab X-i kord `(-10 + depth) -> -9`.
+4. Max mängija (O) võrdleb seda `best_score`-iga. Kuna -9 on väiksem kui -inf pole tõsi, `best_score = -9`.
+5. Proovitakse teist käiku O poolt. Kui see haru annab viigi, on `score = 0`. Uus `best_score = 0`.
+6. Alpha uuendatakse `0`. Kuna `beta = inf`, rekursioon jätkub.
+7. O valib lõpuks käigu, mille garanteeritud `best_score` on suurim (vähemalt 0).
+
+Ressursikasutus ja Mõõdikud
+- `tracemalloc.start()` ja `time.perf_counter()` mõõdavad iga sammu ressursikulu, tagades et minmax+alpha-beta on efektiivsem kui lihtne minmax (mõõdetav mälukasutuse ja ms langusena sügavamates otstes). Näiteks, tühja laua algkäik võtab umbes 500-1500ms sõltuvalt raalvariandist.

@@ -52,10 +52,13 @@ class TicTacToeGame:
         return [(r, c) for r in range(3) for c in range(3) if self.board[r][c] == ' ']
 
     def evaluate_board(self):
+        # Võit (O / AI): baasskoor +1
         if self.winner == 'O':
             return 1
+        # Kaotus (X / Inimene): baasskoor -1
         elif self.winner == 'X':
             return -1
+        # Viik: Skoor 0
         return 0
 
     def clone(self):

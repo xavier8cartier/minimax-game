@@ -3,26 +3,38 @@ import tracemalloc
 import math
 
 def minimax(game, depth, is_maximizing, alpha=-math.inf, beta=math.inf):
+    # Lõpetab rekursiooni terminalseisus (võit/viik)
     if game.winner or game.is_draw:
+        # Hangib baashinnangu (+1, -1, 0)
         score = game.evaluate_board()
         if score == 1:
+            # Optimeerib lahendusteed premeerides kiiremaid võite
             return 10 - depth
         elif score == -1:
+            # Karistab kiiremaid kaotusi, eelistades mängu pikendamist
             return -10 + depth
         return 0
 
+    # Harrastab max-mängija ('O') loogikat (otsib suurimat skoori)
     if is_maximizing:
         best_score = -math.inf
         for r, c in game.get_available_moves():
+            # Loob mänguseisust koopia, et vältida globaalse laua rikkumist simuleerimisel
             sim_game = game.clone()
+            # Teeb potentsiaalse käigu koopias
             sim_game.make_move(r, c)
+            # Kutsutakse rekursiivselt välja vastase käigu simuleerimiseks
             score = minimax(sim_game, depth + 1, False, alpha, beta)
+            # Uuendab seni leitud parimat valikut
             best_score = max(score, best_score)
+            # Uuendab Alpha-Beta kärpimise piire
             alpha = max(alpha, score)
+            # (Kärpimine) Lõpetab haru läbimise, sest see on tõestatult halvem
             if beta <= alpha:
                 break
         return best_score
     else:
+        # Min-mängija ('X') loogika
         best_score = math.inf
         for r, c in game.get_available_moves():
             sim_game = game.clone()
